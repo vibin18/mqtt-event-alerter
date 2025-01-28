@@ -30,7 +30,7 @@ build-all:
 
 .PHONY: build
 build:
-	GOOS=${GOOS} GOARCH=${GOARCH} CGO_ENABLED=0 go build -ldflags '$(LDFLAGS)' -o $(PROJECT_NAME) .
+	GOOS=${GOOS} GOARCH=${GOARCH} CGO_ENABLED=1 go build -ldflags '$(LDFLAGS)' -o $(PROJECT_NAME) .
 
 .PHONY: image
 image: image

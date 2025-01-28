@@ -17,7 +17,7 @@ COPY . .
 # RUN make test
 ARG TARGETOS TARGETARCH
 RUN GOOS=${TARGETOS} GOARCH=${TARGETARCH} make build
-RUN ["ls", "-la"]
+
 
 #############################################
 # Test
@@ -37,4 +37,5 @@ ENV LOG_JSON=1
 WORKDIR /
 COPY --from=test /app .
 USER 1000:1000
+EXPOSE 8090
 ENTRYPOINT ["/mqtt-event-alerter"]

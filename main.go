@@ -85,7 +85,7 @@ func main() {
 				time.Sleep(30 * time.Second)
 				timeout--
 			}
-			slog.Info("Connection retrying..")
+			slog.Info("Connected to mqtt")
 
 		}
 

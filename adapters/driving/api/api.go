@@ -2,6 +2,7 @@ package api
 
 import (
 	"bytes"
+	"embed"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"html/template"
@@ -13,6 +14,11 @@ import (
 	"net/http"
 	"time"
 )
+
+// Embed all files in the "assets" directory
+//
+//go:embed html/*
+var htmlTemplates embed.FS
 
 type ApiHandler struct {
 	Reminders app.AlertService
@@ -42,7 +48,7 @@ func (h *ApiHandler) Routes() http.Handler {
 }
 
 func (h *ApiHandler) Home(w http.ResponseWriter, r *http.Request) {
-	tmpl, err := template.ParseGlob("adapters/driving/api/html/*.html")
+	tmpl, err := template.ParseFS(htmlTemplates, "html/*.html")
 	if err != nil {
 		slog.Error("unable to parse the templates", slog.String("error", err.Error()))
 	}
@@ -62,7 +68,7 @@ func (h *ApiHandler) Home(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *ApiHandler) SendAlert(w http.ResponseWriter, r *http.Request) {
-	tmpl, err := template.ParseGlob("adapters/driving/api/html/*.html")
+	tmpl, err := template.ParseFS(htmlTemplates, "html/*.html")
 	if err != nil {
 		slog.Error("unable to parse the templates", slog.String("error", err.Error()))
 	}
@@ -96,7 +102,7 @@ func (h *ApiHandler) SendAlertSubmit(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *ApiHandler) SendSnapshotAlertSubmit(w http.ResponseWriter, r *http.Request) {
-	tmpl, err := template.ParseGlob("adapters/driving/api/html/*.html")
+	tmpl, err := template.ParseFS(htmlTemplates, "html/*.html")
 	if err != nil {
 		slog.Error("unable to parse the templates", slog.String("error", err.Error()))
 	}
@@ -126,10 +132,11 @@ func (h *ApiHandler) SendSnapshotAlertSubmit(w http.ResponseWriter, r *http.Requ
 	if err != nil {
 		slog.Error("error writing to response", slog.String("error", err.Error()))
 	}
+
 }
 
 func (h *ApiHandler) ListPage(w http.ResponseWriter, r *http.Request) {
-	tmpl, err := template.ParseGlob("adapters/driving/api/html/*.html")
+	tmpl, err := template.ParseFS(htmlTemplates, "html/*.html")
 	if err != nil {
 		slog.Error("unable to parse the templates", slog.String("error", err.Error()))
 	}
