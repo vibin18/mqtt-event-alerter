@@ -1,0 +1,27 @@
+<div  class="col-9 right-pane" id="rightPane">
+    <h3 style="text-align: center;">Send an Alert</h3>
+    <form id="reminder-form" hx-post="/send-alert-submit" hx-target="#response"  hx-swap="innerHTML" method="post" hx-on="htmx:afterRequest:resetForm()" class="mt-4">
+        <!--          name="reminder-form" class="w-50" action="/create-submit" method="POST">-->
+        <div class="mb-3">
+            <label for="messageInput" class="form-label">Message</label>
+            <textarea name="messageInput" class="form-control" id="messageInput" rows="3" placeholder="Enter your alert message (max 50 chars)" maxlength="100" required></textarea>
+        </div>
+        <button type="submit"  class="btn btn-danger">Submit</button>
+    </form>
+    <div id="response" class="mt-4"></div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    // JavaScript function to reset the form
+    function resetForm() {
+        // Select the form by its ID and reset the fields
+        document.getElementById('reminder-form').reset();
+    }
+
+    // Adding the event listener for the form reset manually
+    document.addEventListener('htmx:afterRequest', function (event) {
+        // Reset the form after the request is complete
+        resetForm();
+    });
+</script>

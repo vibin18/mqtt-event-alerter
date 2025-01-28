@@ -1,0 +1,20 @@
+<div  class="col-9 rightPaneListTable" id="rightPane">
+  <h3>Alerts</h3>
+  <table id="rightPaneListTable" class="table table-striped table-bordered table-sm" cellspacing="0" width="100%">
+    <thead>
+    <tr class="border-danger">
+      <th class="th-sm bg-black">Message</th>
+      <th class="th-sm bg-black">Date</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    {{range $index,$val := .}}
+    <tr>
+      <td>{{.Message}}</td>
+      <td>{{.DateTime}}</td>
+    </tr>
+    {{end}}
+    </tbody>
+  </table>
+</div>

@@ -1,0 +1,19 @@
+{{define "Sidenav"}}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Left Pane -->
+        <div class="col-3 left-pane">
+            <h4 class="text-center mb-4">Alerts</h4>
+            <button hx-get="/create-alert" hx-target="#rightPane" hx-swap="outerHTML" id="txtAlertBtn" class="btn">Send</button>
+            <button hx-get="/list-page" hx-target="#rightPane" hx-swap="outerHTML" id="listBtn" class="btn">List</button>
+            <button hx-get="/create-snapshot-alert" hx-target="#rightPane" hx-swap="outerHTML" id="snapshotBtn" class="btn">Snapshot</button>
+        </div>
+
+        <!-- Right Pane -->
+        <div class="col-9 right-pane" id="rightPane">
+            <h3>Welcome to Alerts!</h3>
+            <p>Home of Alerts.</p>
+        </div>
+    </div>
+</div>
+{{end}}
