@@ -12,6 +12,7 @@ type Params struct {
 	DbStorePath    string `           long:"db_path"         env:"DB_PATH"  description:"Path for the sqlite db file" default:"./"`
 	ListenPort     string `           long:"listen_port"       env:"LISTEN_PORT"  description:"Listening port for the web app" default:"*:8090"`
 	MQTTServer     string `           long:"mqtt_server"       env:"MQTT_SERVER"  description:"Mqtt server connection string" default:"192.168.200.75:1883"`
+	MQTTKeepAlive  string `           long:"mqtt_keepalive"    env:"MQTT_KEEPALIVE"  description:"Mqtt keepalive time" default:"25"`
 	LogType        string `           long:"log_type"          env:"LOG_TYPE"  description:"Log type, JSON or TXT" default:"TXT"`
 	LogLevel       string `           long:"log_level"         env:"LOG_LEVEL"  description:"Log level" default:"INFO"`
 }

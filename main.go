@@ -59,7 +59,7 @@ func main() {
 	service := app.NewAlertService(sqliteRepo)
 	handler := api.NewReminderWebHandler(service, logger, discord)
 	mqttHandler := mqtt.NewMqttHandler(discord, sqliteRepo)
-	mqttClientOptions := mqtt.NewMqttConfig(arg.MQTTServer)
+	mqttClientOptions := mqtt.NewMqttConfig(arg.MQTTServer, arg.MQTTKeepAlive)
 
 	slog.Info("creating new mqtt client")
 	client := mq.NewClient(mqttClientOptions)
@@ -83,7 +83,7 @@ func main() {
 			if !ok {
 				slog.Info("mqtt connection not ready")
 				slog.Info("retrying connection..")
-				time.Sleep(30 * time.Second)
+				time.Sleep(10 * time.Second)
 				timeout--
 			}
 			slog.Info("connected to mqtt")
