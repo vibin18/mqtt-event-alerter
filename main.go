@@ -65,27 +65,28 @@ func main() {
 	client := mq.NewClient(mqttClientOptions)
 	mqttClientOptions.OnConnect = mqttHandler.ConnectionHandler(client)
 	mqttClientOptions.OnConnectionLost = mqttHandler.ConnectionLostHandler()
-	slog.Info("trying to connect mqtt server")
+	slog.Info("connecting to mqtt server")
 	if token := client.Connect(); token.Wait() && token.Error() != nil {
 		panic(token.Error())
 	}
 
 	go func() {
-		timeout := 10
+		timeout := 1000
 
 		ok := false
 		for !ok {
 			if timeout <= 0 {
-				slog.Info("Connection not ready after timeout, exiting..")
+				slog.Info("connection not ready after timeout, exiting..")
 				return
 			}
 			ok = client.IsConnectionOpen()
 			if !ok {
-				slog.Info("Connection not ready")
+				slog.Info("mqtt connection not ready")
+				slog.Info("retrying connection..")
 				time.Sleep(30 * time.Second)
 				timeout--
 			}
-			slog.Info("Connected to mqtt")
+			slog.Info("connected to mqtt")
 
 		}
 
