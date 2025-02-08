@@ -13,10 +13,10 @@ type Params struct {
 	ListenPort     string `           long:"listen_port"       env:"LISTEN_PORT"  description:"Listening port for the web app" default:"*:8090"`
 	MQTTServer     string `           long:"mqtt_server"       env:"MQTT_SERVER"  description:"Mqtt server connection string" default:"192.168.200.75:1883"`
 	FrigateServer  string `           long:"frigate_server"    env:"FRIGATE_SERVER"  description:"frigate server connection string" default:"192.168.200.75:5000"`
-	SecureFrigate  bool   `             long:"Secure_frigate"    env:"SECURE_FRIGATE"  description:"frigate server enabled TLS" default:"false"`
-	MQTTKeepAlive  string `           long:"mqtt_keepalive"    env:"MQTT_KEEPALIVE"  description:"Mqtt keepalive time" default:"25"`
-	LogType        string `           long:"log_type"          env:"LOG_TYPE"  description:"Log type, JSON or TXT" default:"TXT"`
-	LogLevel       string `           long:"log_level"         env:"LOG_LEVEL"  description:"Log level" default:"INFO"`
+	//	SecureFrigate  bool   `           long:"Secure_frigate"    env:"SECURE_FRIGATE"  description:"frigate server enabled TLS" default:"false"`
+	MQTTKeepAlive string `           long:"mqtt_keepalive"    env:"MQTT_KEEPALIVE"  description:"Mqtt keepalive time" default:"25"`
+	LogType       string `           long:"log_type"          env:"LOG_TYPE"  description:"Log type, JSON or TXT" default:"TXT"`
+	LogLevel      string `           long:"log_level"         env:"LOG_LEVEL"  description:"Log level" default:"INFO"`
 }
 
 func (o *Params) GetJson() []byte {

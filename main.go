@@ -57,7 +57,7 @@ func main() {
 
 	discord := messengers.NewDiscordMessenger(arg.DiscordToken, arg.DiscordChannel)
 	service := app.NewAlertService(sqliteRepo)
-	handler := api.NewReminderWebHandler(service, logger, discord, arg.FrigateServer, arg.SecureFrigate)
+	handler := api.NewReminderWebHandler(service, logger, discord, arg.FrigateServer, false)
 	mqttHandler := mqtt.NewMqttHandler(discord, sqliteRepo)
 	mqttClientOptions := mqtt.NewMqttConfig(arg.MQTTServer, arg.MQTTKeepAlive)
 
