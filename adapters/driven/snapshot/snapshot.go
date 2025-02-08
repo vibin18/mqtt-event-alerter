@@ -28,7 +28,7 @@ func urlGen(baseUrl, cam string, secure bool) string {
 }
 
 func GetSnapshot(baseUrl, cam string, secure bool) *http.Response {
-	url := urlGen(baseUrl, cam, true)
+	url := urlGen(baseUrl, cam, secure)
 	response, err := http.Get(url)
 
 	slog.Info("fetching snapshot using", slog.String("URL", url))
