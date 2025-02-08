@@ -34,6 +34,7 @@ func NewReminderWebHandler(reminders app.AlertService, logger *slog.Logger, mess
 		logger:        logger,
 		Messenger:     messenger,
 		FrigateServer: frigate,
+		SecureFrigate: secure,
 	}
 }
 
