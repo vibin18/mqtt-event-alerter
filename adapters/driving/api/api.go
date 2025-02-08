@@ -21,16 +21,19 @@ import (
 var htmlTemplates embed.FS
 
 type ApiHandler struct {
-	Reminders app.AlertService
-	logger    *slog.Logger
-	Messenger messengers.Alerter
+	Reminders     app.AlertService
+	logger        *slog.Logger
+	Messenger     messengers.Alerter
+	FrigateServer string
+	SecureFrigate bool
 }
 
-func NewReminderWebHandler(reminders app.AlertService, logger *slog.Logger, messenger messengers.Alerter) *ApiHandler {
+func NewReminderWebHandler(reminders app.AlertService, logger *slog.Logger, messenger messengers.Alerter, frigate string, secure bool) *ApiHandler {
 	return &ApiHandler{
-		Reminders: reminders,
-		logger:    logger,
-		Messenger: messenger,
+		Reminders:     reminders,
+		logger:        logger,
+		Messenger:     messenger,
+		FrigateServer: frigate,
 	}
 }
 
@@ -116,7 +119,7 @@ func (h *ApiHandler) SendSnapshotAlertSubmit(w http.ResponseWriter, r *http.Requ
 	formatedDate := dateLayout.Format(time.ANSIC)
 
 	slog.Info("generating snapshot ")
-	frigateSnapshot := snapshot.GetSnapshot("frigate.kerala.vbin.in", "front_main_view", true)
+	frigateSnapshot := snapshot.GetSnapshot(h.FrigateServer, "front_main_view", h.SecureFrigate)
 
 	slog.Info(frigateSnapshot.Status)
 
