@@ -61,11 +61,9 @@ func main() {
 	mqttHandler := mqtt.NewMqttHandler(discord, sqliteRepo)
 	mqttClientOptions := mqtt.NewMqttConfig(arg.MQTTServer, arg.MQTTKeepAlive)
 
-	slog.Info("creating new mqtt client")
 	client := mq.NewClient(mqttClientOptions)
 	mqttClientOptions.OnConnect = mqttHandler.ConnectionHandler(client)
 	mqttClientOptions.OnConnectionLost = mqttHandler.ConnectionLostHandler()
-	slog.Info("connecting to mqtt server")
 	if token := client.Connect(); token.Wait() && token.Error() != nil {
 		panic(token.Error())
 	}
@@ -91,6 +89,7 @@ func main() {
 		}
 
 		mqttHandler.Sub(client, "frigate/events")
+
 	}()
 	slog.Info("Starting Golang Application on port *:8090", slog.String("arch", runtime.GOARCH), slog.String("compiler", runtime.Compiler), slog.String("version", runtime.Version()))
 	err = http.ListenAndServe(":8090", handler.Routes())

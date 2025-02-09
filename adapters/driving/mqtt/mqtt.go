@@ -14,12 +14,6 @@ import (
 type MQTTHandler struct {
 	Messenger  messengers.Alerter
 	Repository repository.Repository
-	//eventID     string
-	//label       string
-	//camera      string
-	//startTime   time.Time
-	//Location    *time.Location
-	//contentTime string
 }
 
 func NewMqttHandler(m messengers.Alerter, repo repository.Repository) MQTTHandler {
@@ -68,8 +62,11 @@ func (m MQTTHandler) MessagePubHandler(client mq.Client, msg mq.Message) {
 
 		slog.Info("generating snapshot")
 		frigateSnapshot := snapshot.GetSnapshot("frigate.kerala.vbin.in", camera, true)
+		slog.Debug("snapshot generated")
 
+		slog.Debug("sending alert to messenger")
 		m.Messenger.SendPictureAlert(label, camera, "eventid", contentTime, frigateSnapshot.Body)
+		slog.Debug("adding alert entry to db")
 		m.Repository.AddAlert(startTime, fmt.Sprintf("A %v detected on %v at %v", label, camera, contentTime))
 	}
 }
