@@ -12,14 +12,18 @@ import (
 )
 
 type MQTTHandler struct {
-	Messenger  messengers.Alerter
-	Repository repository.Repository
+	Messenger     messengers.Alerter
+	Repository    repository.Repository
+	FrigateServer string
+	SecureFrigate bool
 }
 
-func NewMqttHandler(m messengers.Alerter, repo repository.Repository) MQTTHandler {
+func NewMqttHandler(m messengers.Alerter, repo repository.Repository, frigate string, secure bool) MQTTHandler {
 	return MQTTHandler{
-		Messenger:  m,
-		Repository: repo,
+		Messenger:     m,
+		Repository:    repo,
+		FrigateServer: frigate,
+		SecureFrigate: secure,
 	}
 }
 
@@ -61,7 +65,7 @@ func (m MQTTHandler) MessagePubHandler(client mq.Client, msg mq.Message) {
 		contentTime := fmt.Sprintf("%v", startTime.In(loc).Format(time.RFC1123))
 
 		slog.Info("generating snapshot")
-		frigateSnapshot := snapshot.GetSnapshot("frigate.kerala.vbin.in", camera, true)
+		frigateSnapshot := snapshot.GetSnapshot(m.FrigateServer, camera, m.SecureFrigate)
 		slog.Debug("snapshot generated")
 
 		slog.Debug("sending alert to messenger")
