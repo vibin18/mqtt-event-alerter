@@ -8,40 +8,101 @@ import (
 	"mqtt-event-alerter/adapters/driven/messengers"
 	"mqtt-event-alerter/adapters/driven/repository"
 	"mqtt-event-alerter/adapters/driven/snapshot"
+	"os"
+	"os/signal"
+	"syscall"
 	"time"
 )
 
-type MQTTHandler struct {
-	Messenger     messengers.Alerter
-	Repository    repository.Repository
-	FrigateServer string
-	SecureFrigate bool
+const (
+	retryDelay   = 5 * time.Second  // Delay before retrying connection
+	maxRetries   = 100              // Max retries before giving up
+	reconnectGap = 10 * time.Second // Wait time before trying to reconnect
+)
+
+// MQTTClient wraps the MQTT client
+type MQTTClient struct {
+	Messenger      messengers.Alerter
+	Repository     repository.Repository
+	FrigateServer  string
+	SecureFrigate  bool
+	client         mq.Client
+	broker         string
+	topic          string
+	clientID       string
+	messageHandler mq.MessageHandler
+	stopChan       chan struct{}
 }
 
-func NewMqttHandler(m messengers.Alerter, repo repository.Repository, frigate string, secure bool) MQTTHandler {
-	return MQTTHandler{
-		Messenger:     m,
-		Repository:    repo,
-		FrigateServer: frigate,
-		SecureFrigate: secure,
+// NewMQTTClient creates a new MQTTClient instance
+func NewMQTTClient(broker, topic, clientID string, handler mq.MessageHandler, m messengers.Alerter, repo repository.Repository, frigate string, secure bool) *MQTTClient {
+	return &MQTTClient{
+		broker:         broker,
+		topic:          topic,
+		clientID:       clientID,
+		messageHandler: handler,
+		Messenger:      m,
+		Repository:     repo,
+		FrigateServer:  frigate,
+		SecureFrigate:  secure,
+		stopChan:       make(chan struct{}),
 	}
 }
 
-func (m MQTTHandler) ConnectionHandler(client mq.Client) mq.OnConnectHandler {
-	return func(client mq.Client) {
-		slog.Info("connected to mqtt")
-		slog.Info("Subscribing to frigate/events")
-		m.Sub(client, "frigate/events")
+// ConnectWithRetry connects to the MQTT broker with retry logic
+func (m *MQTTClient) ConnectWithRetry() {
+	opts := mq.NewClientOptions().
+		AddBroker(m.broker).
+		SetClientID(m.clientID).
+		SetDefaultPublishHandler(m.messageHandler).
+		SetAutoReconnect(true).
+		SetConnectRetry(true).
+		SetConnectRetryInterval(reconnectGap)
+
+	for i := 1; i <= maxRetries; i++ {
+		m.client = mq.NewClient(opts)
+		token := m.client.Connect()
+		if token.Wait() && token.Error() == nil {
+			slog.Info("connected to MQTT broker")
+			return
+		}
+
+		slog.Info("MQTT connection failed ", slog.String(fmt.Sprint(i), fmt.Sprint(maxRetries)), slog.String("token error", token.Error().Error()))
+		time.Sleep(retryDelay)
 	}
+
+	slog.Error("Max retries reached, could not connect to MQTT broker")
+	os.Exit(1)
 }
 
-func (m MQTTHandler) Sub(client mq.Client, topic string) {
-	token := client.Subscribe(topic, 1, m.MessagePubHandler)
-	token.Wait()
-	slog.Info("subscribed to topic", slog.String("topic", topic))
+// Subscribe subscribes to the configured topic
+func (m *MQTTClient) Subscribe() {
+	token := m.client.Subscribe(m.topic, 1, m.MessageHandler)
+	if token.Wait() && token.Error() != nil {
+		slog.Info("Subscription failed", slog.String("topic", token.Error().Error()))
+		os.Exit(1)
+	}
+	slog.Info("Subscribed to topic: ", slog.String("topic", m.topic))
 }
 
-func (m MQTTHandler) MessagePubHandler(client mq.Client, msg mq.Message) {
+// Run starts the MQTT client and listens for termination signals
+func (m *MQTTClient) Run() {
+	slog.Info("starting mqtt handler")
+	m.ConnectWithRetry()
+	slog.Info("subscribing to topic")
+	m.Subscribe()
+
+	// Handle graceful shutdown
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
+	<-sigChan
+
+	slog.Info("Shutting down MQTT client...")
+	m.client.Disconnect(250)
+	slog.Info("MQTT client disconnected. Exiting.")
+}
+
+func (m *MQTTClient) MessageHandler(client mq.Client, msg mq.Message) {
 	var events Events
 
 	err := json.Unmarshal(msg.Payload(), &events)
@@ -75,24 +136,6 @@ func (m MQTTHandler) MessagePubHandler(client mq.Client, msg mq.Message) {
 	}
 }
 
-func (m MQTTHandler) ConnectionLostHandler() mq.ConnectionLostHandler {
-	return func(client mq.Client, err error) {
-		slog.Error("connection lost to mqtt: ", slog.String("error", err.Error()))
-		timeout := 5
-		ok := false
-		for !ok {
-			if timeout <= 0 {
-				slog.Error("connection not ready after timeout, exiting..")
-				return
-			}
-			ok = client.IsConnectionOpen()
-			if !ok {
-				slog.Warn("connection not ready")
-				time.Sleep(1 * time.Second)
-				timeout--
-				slog.Info("attempting to reconnect", slog.String("attempt", string(rune(timeout))))
-			}
-			slog.Info("connected..")
-		}
-	}
+func (m *MQTTClient) Stop() {
+	close(m.stopChan)
 }
