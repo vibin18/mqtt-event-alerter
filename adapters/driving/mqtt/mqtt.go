@@ -82,14 +82,14 @@ func (m *MQTTClient) Subscribe() {
 		slog.Info("Subscription failed", slog.String("topic", token.Error().Error()))
 		os.Exit(1)
 	}
-	slog.Info("Subscribed to topic: ", slog.String("topic", m.topic))
+	slog.Info("Subscribed to", slog.String("topic", m.topic))
 }
 
 // Run starts the MQTT client and listens for termination signals
 func (m *MQTTClient) Run() {
 	slog.Info("starting mqtt handler")
 	m.ConnectWithRetry()
-	slog.Info("subscribing to topic")
+	slog.Info("subscribing to mqtt topic")
 	m.Subscribe()
 
 	// Handle graceful shutdown
@@ -97,7 +97,7 @@ func (m *MQTTClient) Run() {
 	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
 	<-sigChan
 
-	slog.Info("Shutting down MQTT client...")
+	slog.Info("shutting down MQTT client...")
 	m.client.Disconnect(250)
 	slog.Info("MQTT client disconnected. Exiting.")
 }
@@ -111,7 +111,7 @@ func (m *MQTTClient) MessageHandler(client mq.Client, msg mq.Message) {
 	}
 
 	if events.Type == "new" {
-		slog.Info("new event received")
+		slog.Info("new mqtt event received")
 		eventStartTime := events.Before.StartTime
 
 		// TODO get location from parameter
@@ -125,13 +125,11 @@ func (m *MQTTClient) MessageHandler(client mq.Client, msg mq.Message) {
 		startTime := time.Unix(int64(eventStartTime), 0)
 		contentTime := fmt.Sprintf("%v", startTime.In(loc).Format(time.RFC1123))
 
-		slog.Info("generating snapshot")
 		frigateSnapshot := snapshot.GetSnapshot(m.FrigateServer, camera, m.SecureFrigate)
-		slog.Debug("snapshot generated")
 
-		slog.Debug("sending alert to messenger")
+		slog.Info("sending alert to messenger")
 		m.Messenger.SendPictureAlert(label, camera, "eventid", contentTime, frigateSnapshot.Body)
-		slog.Debug("adding alert entry to db")
+		slog.Info("adding alert entry to database")
 		m.Repository.AddAlert(startTime, fmt.Sprintf("A %v detected on %v at %v", label, camera, contentTime))
 	}
 }

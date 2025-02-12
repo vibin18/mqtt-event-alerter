@@ -46,6 +46,7 @@ func (d *DiscordOps) SendPictureAlert(label, camera, eventId, contentTime string
 	if err != nil {
 		slog.Error("discord message send failure", slog.Any("error", err.Error()))
 	}
+	slog.Info("message send to discord messenger with snapshot")
 }
 
 func (d *DiscordOps) SendTextAlert(message string) {
@@ -54,4 +55,5 @@ func (d *DiscordOps) SendTextAlert(message string) {
 	if err != nil {
 		slog.Error("discord message send failure", slog.Any("error", err.Error()))
 	}
+	slog.Info("text message send to discord messenger")
 }
